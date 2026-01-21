@@ -34,7 +34,7 @@ def label2rgb(label_img):
     return labeled_img
 
 # Selección de una carpeta mediante un diálogo de la biblioteca 'tkinter'
-folders = '../VxC FOTOS'     # Poner la ruta de la carpeta de cartas de póker
+folders = '../Training'     # Poner la ruta de la carpeta de cartas de póker
 path = filedialog.askdirectory(initialdir=folders, title="Seleccione una carpeta")
 
 # Hacemos una lista vacía de cartas 'Cards' para ir añadiendo items mediante Cards.append(Card)

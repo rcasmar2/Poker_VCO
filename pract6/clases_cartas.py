@@ -41,7 +41,7 @@ class Card:
       DIAMONDS = 'Diamonds'   # Rombos
       SPADES = 'Spades'       # Picas
       HEARDS = 'Hearts'       # Corazones
-      CLUBS ='Clubs'          # Tréboles
+      CLUBS = 'Clubs'          # Tréboles
       # Figuras y cifras de las cartas de póker
       SUITS = ('Rombos','Picas','Corazones','Treboles')
       FIGURES = ('0','A','2','3','4','5','6','7','8','9','J','Q','K') # Se accede mediantge Carta.FIGURES[i]

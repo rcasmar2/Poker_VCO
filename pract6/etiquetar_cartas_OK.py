@@ -20,7 +20,7 @@ FIGURES = ('0','A','2','3','4','5','6','7','8','9','J','Q','K') # Se accede medi
 SUITS = ('Rombos','Picas','Corazones','Treboles')
 MOTIF_LABELS = ('Rombos','Picas','Corazones','Treboles','0','2','3','4','5','6','7','8','9','A','J','Q','K','Others')   
 
-filecard = 'cartas.npz'
+filecard = 'trainCards.npz'
 
 class App(tk.Tk):
     #FIGURES = ('0','A','2','3','4','5','6','7','8','9','J','Q','K') # Se accede mediantge Carta.FIGURES[i]
