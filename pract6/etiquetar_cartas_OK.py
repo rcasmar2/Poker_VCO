@@ -20,7 +20,7 @@ FIGURES = ('0','A','2','3','4','5','6','7','8','9','J','Q','K') # Se accede medi
 SUITS = ('Rombos','Picas','Corazones','Treboles')
 MOTIF_LABELS = ('Rombos','Picas','Corazones','Treboles','0','2','3','4','5','6','7','8','9','A','J','Q','K','Others')   
 
-filecard = 'trainCards.npz'
+filecard = 'testCards.npz'
 
 class App(tk.Tk):
     #FIGURES = ('0','A','2','3','4','5','6','7','8','9','J','Q','K') # Se accede mediantge Carta.FIGURES[i]
@@ -60,9 +60,9 @@ class App(tk.Tk):
         (h,w,_) = img.shape
         im = Image.fromarray(img)
         print(im.getbands())
-        scale_div = 3
-        if (w > 4000) or (h > 4000):
-            scale_div = 6
+        scale_div = 5
+        if (w > 1000) or (h > 1000):
+            scale_div = 10
         if (w < 200) or (h < 200):
             scale_div = 0.5
         width = int(w / scale_div)
@@ -119,7 +119,7 @@ class App(tk.Tk):
         cnt = motif.contour
         img = self.img.copy()
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        cv2.drawContours(img, [cnt], -1, (0,0,255), 5)
+        cv2.drawContours(img, [cnt], -1, (0,0,255), 15)
         self.show_image(img)
         self.label.grid_forget()
         self.label = ttk.Label(self, text=f"Motivo actual: {motif.motifLabel} ")

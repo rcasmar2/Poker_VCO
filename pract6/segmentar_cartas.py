@@ -25,8 +25,8 @@ cv2.namedWindow(window_labels,cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO | cv2.WIN
 cv2.namedWindow(window_roi,cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO | cv2.WINDOW_GUI_EXPANDED)
 
 low_H = 155
-VISUALIZAR = True
-MIN_AREA = 1000
+VISUALIZAR = False
+MIN_AREA = 500
 MAX_AREA = 40000
 
 def label2rgb(label_img):
@@ -46,7 +46,7 @@ def segmentar_objetos_carta(Carta):
     carta_color = Carta.colorImage
     carta_color_id = Carta.cardId
 
-    # Hacemos threshold y connectedComponents sobre la imagen roi
+   # Hacemos threshold y connectedComponents sobre la imagen roi
     fret, thresh2 = cv2.threshold(carta_gris,low_H,255,cv2.THRESH_BINARY_INV)
     (totalLabels, label_ids, values, centroid) = cv2.connectedComponentsWithStats(thresh2, 4, cv2.CV_32S)
 
@@ -55,12 +55,14 @@ def segmentar_objetos_carta(Carta):
         # Área del objeeto
         area = values[i, cv2.CC_STAT_AREA]
     
-        if (area > MIN_AREA and area < MAX_AREA):  # Filtro de tamaño   NUEVA CARTA
+        if (area > MIN_AREA and area < MAX_AREA):  # Filtro de tamaño de los motivos
             componentMask = (label_ids == i).astype("uint8") * 255
             
             # Encontramos un motivo si supera el area minima
             motif = Motif()
-            motif.motifId = i
+            imot = 0
+
+            motif.motifId = imot
             motif.area = area
             motif.centroid = centroid[i]
             # A completar: Contornos del objeto ‘i’ con área mayor que el mínimo indicado
@@ -78,6 +80,8 @@ def segmentar_objetos_carta(Carta):
             # Hu moments (mejor función para reconocer formas) -> Lo pasamos a lista unidmensional
             # Devuelve 7 numeros invariantes a traslación, escala y rotación
             motif.huMoments = cv2.HuMoments(motif.moments).flatten()
+            # Lo hacemos logaritmico para que no sean tan pequeños (los hu moments)
+            hu_log = -1 * np.sign(motif.huMoments) * np.log10(np.abs(motif.huMoments) + 1e-10)
 
             # A. Calcular el círculo mínimo que encierra el contorno
             (x, y), radius = cv2.minEnclosingCircle(motif.contour)
@@ -90,17 +94,38 @@ def segmentar_objetos_carta(Carta):
             center_int = (int(x), int(y))
             radius_int = int(radius)
 
-            # Vector de características (features) del motivo (solo me interesan los 3 primers valores de color_medio)
+            # --- CARACTERÍSITCAS A PONER EN EL VECTOR DE FEATURES DEL MOTIVO ---
+            # Aspect Ratio (Relación Ancho/Alto) -> INVARIANTE A ESCALA
+            # Distingue cosas alargadas (como un 1) de cosas cuadradas (como un 8)
+            x, y, w, h = cv2.boundingRect(motif.contour)
+            aspect_ratio = float(w) / h
+
+            # Rectangularidad (Extent) -> INVARIANTE A ESCALA
+            # Área del objeto dividida por el área del rectángulo que lo encierra.
+            rect_area = w * h
+            extent = float(motif.area) / rect_area
+
+            # Solidez (Solidity) -> INVARIANTE A ESCALA
+            # Ayuda a distinguir formas con huecos o formas cóncavas (como Picas) de formas convexas (Rombos).
+            hull = cv2.convexHull(motif.contour)
+            hull_area = cv2.contourArea(hull)
+            if hull_area == 0: 
+                solidity = 0
+            else:
+                solidity = float(motif.area) / hull_area
+
+            # --- VECTOR FINAL ---
+            # Solo metemos datos que describen "CÓMO ES" la forma, no "CUÁNTO OCUPA".
+            # Vector de características (features) del motivo
             motif.features = np.hstack([
-                motif.huMoments, 
-                motif.perimeter, 
-                motif.area, 
-                x, y,
-                radius, 
-                color_medio[:3]
+                hu_log, 
+                aspect_ratio, 
+                extent, 
+                solidity, 
             ])
 
             Carta.motifs.append(motif)
+            imot += 1
 
             if VISUALIZAR:
                 img = carta_color.copy()
